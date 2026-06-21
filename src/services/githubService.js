@@ -4,6 +4,86 @@ require('dotenv').config();
 const GITHUB_API_URL = 'https://api.github.com';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
+const mockProfiles = {
+  torvalds: {
+    login: 'torvalds',
+    name: 'Linus Torvalds',
+    bio: 'Linux creator',
+    location: 'Portland, OR',
+    blog: 'https://torvalds-family.blogspot.com',
+    company: 'Linux Foundation',
+    email: null,
+    public_repos: 2,
+    public_gists: 0,
+    followers: 189000,
+    following: 0,
+    avatar_url: 'https://avatars.githubusercontent.com/u/1024025?v=4',
+    html_url: 'https://github.com/torvalds',
+    created_at: '2005-04-16T22:38:05Z',
+    updated_at: '2024-06-21T10:00:00Z',
+  },
+  octocat: {
+    login: 'octocat',
+    name: 'The Octocat',
+    bio: "GitHub's mascot",
+    location: 'San Francisco',
+    blog: 'https://github.blog',
+    company: 'GitHub',
+    email: null,
+    public_repos: 2,
+    public_gists: 1,
+    followers: 3938,
+    following: 9,
+    avatar_url: 'https://avatars.githubusercontent.com/u/1?v=4',
+    html_url: 'https://github.com/octocat',
+    created_at: '2011-01-25T19:06:43Z',
+    updated_at: '2024-06-21T10:00:00Z',
+  },
+};
+
+const mockRepos = {
+  torvalds: [
+    {
+      name: 'linux',
+      language: 'C',
+      stargazers_count: 150000,
+      html_url: 'https://github.com/torvalds/linux',
+      description: 'The Linux kernel repository',
+      updated_at: '2024-06-21T10:00:00Z',
+      fork: false,
+    },
+    {
+      name: 'subsurface-for-dirk',
+      language: 'C',
+      stargazers_count: 100,
+      html_url: 'https://github.com/torvalds/subsurface-for-dirk',
+      description: 'Diving log software',
+      updated_at: '2024-06-21T09:00:00Z',
+      fork: false,
+    },
+  ],
+  octocat: [
+    {
+      name: 'Hello-World',
+      language: 'JavaScript',
+      stargazers_count: 1200,
+      html_url: 'https://github.com/octocat/Hello-World',
+      description: 'Sample repository',
+      updated_at: '2024-06-21T10:00:00Z',
+      fork: false,
+    },
+    {
+      name: 'Spoon-Knife',
+      language: 'HTML',
+      stargazers_count: 8000,
+      html_url: 'https://github.com/octocat/Spoon-Knife',
+      description: 'Test repository',
+      updated_at: '2024-06-21T08:00:00Z',
+      fork: true,
+    },
+  ],
+};
+
 const githubClient = axios.create({
   baseURL: GITHUB_API_URL,
   headers: {
@@ -13,6 +93,14 @@ const githubClient = axios.create({
 });
 
 async function fetchUserProfile(username) {
+  if (process.env.USE_MOCK_DB === 'true') {
+    const profile = mockProfiles[username];
+    if (!profile) {
+      throw new Error(`GitHub user "${username}" not found`);
+    }
+    return profile;
+  }
+
   try {
     const response = await githubClient.get(`/users/${username}`);
     return response.data;
@@ -25,6 +113,10 @@ async function fetchUserProfile(username) {
 }
 
 async function fetchUserRepositories(username) {
+  if (process.env.USE_MOCK_DB === 'true') {
+    return mockRepos[username] || [];
+  }
+
   try {
     const repos = [];
     let page = 1;
@@ -184,3 +276,4 @@ module.exports = {
   fetchUserProfile,
   fetchUserRepositories,
 };
+

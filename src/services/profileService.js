@@ -106,8 +106,10 @@ async function getAllProfiles(limit = 10, offset = 0) {
 
     const [countResult] = await connection.execute('SELECT COUNT(*) as total FROM profiles');
 
+    const profiles = Array.isArray(rows) ? rows : (rows ? [rows].filter(r => r) : []);
+
     return {
-      profiles: rows.map(formatProfile),
+      profiles: profiles.map(formatProfile),
       total: countResult[0].total,
       limit,
       offset,
